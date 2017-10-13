@@ -7,6 +7,7 @@ from docx import Document
 
 
 dir_path = sys.argv[1]
+dest_file = sys.argv[2] ¡ "fichas.csv"
 
 print("Scanning " + dir_path)
 
@@ -28,14 +29,12 @@ print(table_headers)
 for root, dirs, files in os.walk(dir_path, topdown=True):
     for name in files:
         if name.endswith(".docx") and not name.startswith("~$"):
-          print(os.path.join(root, name))
-          filenames.append(name)
+            path = os.path.join(root, name)
+            print(path)
+            filenames.append(path)
 
 
-
-
-
-with open('fichas.csv', 'w') as csvfile:
+with open('output/' + dest_file, 'w') as csvfile:
     fichas_writer = csv.writer(csvfile, delimiter='\t')
     fichas_writer.writerow(table_headers)
     for filename in filenames:
@@ -45,9 +44,9 @@ with open('fichas.csv', 'w') as csvfile:
         values = []
         for cell in col.cells:
             txt = cell.text
-            txt.replace('\r\n',',')
-            txt.replace('\n',',')
-            txt.replace('\r',',')
+            txt = txt.replace('\r\n',',')
+            txt = txt.replace('\n',',')
+            txt = txt.replace('\r',',')
             values.append(txt)
 
         print(values)
