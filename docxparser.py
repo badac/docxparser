@@ -26,6 +26,7 @@ table_headers = [
     "Exposiciones",
     "Publicaciones",
     "Referente de prensa",
+    "Tipo",
     "Archivo de origen"
     ]
 print(table_headers)
@@ -54,6 +55,11 @@ with open('output/' + dest_file, 'w') as csvfile:
                 txt = txt.replace('\r',',')
                 values.append(txt)
             #print(values)
+            if "boceto".casefold() in filename.casefold() or "boceto".casefold() in values[0].casefold() :
+                values.append("boceto")
+            else:
+                values.append("obra")
+
             values.append(filename)
             fichas_writer.writerow(values)
             processed_count += 1
