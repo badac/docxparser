@@ -28,32 +28,33 @@ table_headers = [
     "Tecnica",
     "Dimensiones",
     "Imagen.: Formato/ Nombre/Autor",
-    "image_file",
-    "img_file",
     "Creditos",
     "Propietarios",
     "Exposiciones",
     "Publicaciones",
     "Referente de prensa",
+    "image_file",
+    "img_file",
     "Tipo",
     "Archivo de origen"
     ]
 print(table_headers)
-
+#los strings en esta lista deben estar ordenados del más largo, plural al más sencillo y singular
 trim_strings = [
-    "foto",
-    "fotografía",
-    "diapositiva",
     "Diapositiva/ Foto",
     "Diapositiva/Foto",
     "Diapositivas/Fotos",
-    "fotos",
-    "foto mala",
     "imagen escaneada",
-    "scanner",
-    "placa",
+    "foto mala",
     "placa-diapo",
-    "diapo-placa"
+    "diapo-placa",
+    "fotografía",
+    "fotos",
+    "foto",
+    "diapositivas",
+    "diapositiva",
+    "scanner",
+    "placa"
 ]
 
 no_img_strings = [
@@ -61,6 +62,7 @@ no_img_strings = [
     "sin imagen",
     "sin foto",
     "no hay foto",
+    "no hay foto,",
     "no hay imagen",
     "Foto,pendiente",
     "pendiente"
@@ -91,15 +93,17 @@ with open('output/' + dest_file, 'w') as csvfile:
             table = doc.tables[0]
             col = table.columns[1]
             values = []
+            img_filename = "" #nombre de archivo en la celda, procesado
+            img_file = "" #nombre de archivo encontrado en la carpeta JPG
             for index, cell in enumerate(col.cells):
 
                 txt = cell.text # nombre de archivo en la celda, sin procesar
-                img_filename = "" #nombre de archivo en la celda, procesado
-                img_file = "" #nombre de archivo encontrado en la carpeta JPG
+
                 # 4 es el campo de archivo de imagen
                 txt = txt.replace('\r\n',',')
                 txt = txt.replace('\n',',')
                 txt = txt.replace('\r',',')
+                txt = txt.replace('\t',',')
 
                 if index == 4:
                     is_img = True
@@ -115,11 +119,14 @@ with open('output/' + dest_file, 'w') as csvfile:
                         #img_filename = img_filename.replace('\r\n','')
                         #img_filename = img_filename.replace('\n','')
                         #img_filename = img_filename.replace('\r','')
+
+                        #elimina palabras que no son parte del nombre de archivo
                         for exp in expressions:
                             img_filename = exp.sub('',img_filename)
-                            #txt = insensitive_foto.sub('', txt)
-                            #txt = insensitive_diapo.sub('', txt)
-                        #print img_dir_path
+
+                        #elimina caracteres no alfanumericos al ppio del archivo
+                        e = re.compile("^\W+")
+                        img_filename = e.sub('',img_filename)
                         print(path)
                         print(img_filename)
 
@@ -149,8 +156,9 @@ with open('output/' + dest_file, 'w') as csvfile:
 
                 # Agregamos los resultado a los valores.
                 values.append(txt)
-                values.append(img_filename)
-                values.append(img_file)
+
+            values.append(img_filename)
+            values.append(img_file)
             #print(values)
             #agrega tipo de entrada obra/boceto
             if "boceto".casefold() in filename.casefold() or "boceto".casefold() in values[0].casefold() :
