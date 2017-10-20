@@ -33,7 +33,7 @@ table_headers = [
     "Exposiciones",
     "Publicaciones",
     "Referente de prensa",
-    "image_file",
+    "img_filename",
     "img_file",
     "Tipo",
     "Archivo de origen"
@@ -43,7 +43,10 @@ print(table_headers)
 trim_strings = [
     "Diapositiva/ Foto",
     "Diapositiva/Foto",
+    "Dipositiva/Foto",
     "Diapositivas/Fotos",
+    "foto-diapo",
+    "foto/placa",
     "imagen escaneada",
     "foto mala",
     "placa-diapo",
@@ -53,6 +56,8 @@ trim_strings = [
     "foto",
     "diapositivas",
     "diapositiva",
+    "dipositiva",
+    "diapositivo",
     "scanner",
     "placa"
 ]
@@ -112,6 +117,8 @@ with open('output/' + dest_file, 'w') as csvfile:
                     for string in no_img_strings:
                         if string.casefold() in img_filename.casefold():
                             is_img = False
+                            img_filename = ""
+                            break
                     #Si hay nombre de archivo de imagen, procesamos el texto
                     #sacando las partes que no son parte del nombre de archivo.
                     if is_img:
