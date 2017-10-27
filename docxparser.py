@@ -7,6 +7,7 @@ import regex
 import glob
 import traceback
 import csv
+from shutil import copyfile
 from docx import Document
 
 
@@ -15,6 +16,7 @@ dest_file = sys.argv[2] or "fichas.csv"
 processed_count = 0
 unprocessed_count = 0
 unprocessed_files = []
+img_out  = "output/img/"
 
 print("Scanning " + dir_path)
 
@@ -90,7 +92,7 @@ for root, dirs, files in os.walk(dir_path, topdown=True):
 
 
 with open('output/' + dest_file, 'w') as csvfile:
-    fichas_writer = csv.writer(csvfile, delimiter='\t')
+    fichas_writer = csv.writer(csvfile, delimiter='|')
     fichas_writer.writerow(table_headers)
     for path, filename, directory in zip(paths, filenames, directories):
         try:
@@ -134,38 +136,56 @@ with open('output/' + dest_file, 'w') as csvfile:
                         #elimina caracteres no alfanumericos al ppio del archivo
                         e = re.compile("^\W+")
                         img_filename = e.sub('',img_filename)
-                        print(path)
-                        print(img_filename)
+                        #print(path)
+                        #print(img_filename)
 
                         #listamos los archivos jpg del directorio de imagenes
-                        img_dir_path = os.path.join(directory, "JPG" )
-                        #print(img_dir_path)
-                        if os.path.exists(img_dir_path):
-                            #num_files = len([name for name in os.listdir(img_dir_path) if os.path.isfile(name)])
-                            img_file = ""
-                            img_list = []
-                            types = ('*.jpg', '*.jpeg','*.JPG','*.JPEG')
-                            for f in types:
-                                img_list.extend(glob.glob(os.path.join(img_dir_path,f)))
+                        dir_names = ["JPEG", "JPG"]
+                        for dir_name in dir_names:
+                            img_dir_path = os.path.join(directory, dir_name )
 
-                            #print(img_list)
-                            if len(img_list) == 1:
-                                img_file = img_list[0]
-                            if len(img_list) > 1:
-                                #fuzzy string matching
-                                errs = []
-                                for im in img_list:
-                                    res = regex.fullmatch(r"(?:%s){i,d,s}" % img_filename ,"%s" % im ).fuzzy_counts
-                                    s = sum(res)
-                                    errs.append(s)
-                                min_index = errs.index(min(errs))
-                                img_file = img_list[min_index]
+                            #print(img_dir_path)
+                            if os.path.exists(img_dir_path):
+                                #num_files = len([name for name in os.listdir(img_dir_path) if os.path.isfile(name)])
+                                #img_file = ""
+                                print("path exsits")
+                                img_list = []
+                                types = ('*.jpg', '*.jpeg','*.JPG','*.JPEG')
+                                for f in types:
+                                    img_list.extend(glob.glob(os.path.join(img_dir_path,f)))
 
+                                print(len(img_list))
+                                if len(img_list) == 1:
+                                    img_file = img_list[0]
+                                    print("add one file: " + img_file)
+
+                                if len(img_list) > 1:
+                                    #fuzzy string matching
+                                    errs = []
+                                    for im in img_list:
+                                        res = regex.fullmatch(r"(?:%s){i,d,s}" % img_filename ,"%s" % im ).fuzzy_counts
+                                        s = sum(res)
+                                        errs.append(s)
+                                    #print(img_list)
+                                    #print(errs)
+                                    min_index = errs.index(min(errs))
+                                    #print(min_index)
+                                    img_file = img_list[min_index]
+                                    print("chosen file: " + img_file)
+                            else:
+                                print("this dir doesn't exists: " + img_dir_path)
                 # Agregamos los resultado a los valores.
                 values.append(txt)
 
             values.append(img_filename)
             values.append(img_file)
+
+            if img_file != "":
+                basename = os.path.basename(img_file)
+                dest = os.path.join(img_out, basename)
+                copyfile(img_file, dest)
+
+            print("add file: " + img_file)
             #print(values)
             #agrega tipo de entrada obra/boceto
             if "boceto".casefold() in filename.casefold() or "boceto".casefold() in values[0].casefold() :
